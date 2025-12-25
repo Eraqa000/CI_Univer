@@ -46,4 +46,27 @@ router.get("/roles", authMiddleware, async (req: AuthRequest, res) => {
   });
 });
 
+router.get("/grades", authMiddleware, async (req: AuthRequest, res) => {
+  const { data, error } = await supabase
+    .from("v_student_grades") // Используем View!
+    .select("*")
+    .eq("student_id", req.user?.id);
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
+
+router.get("/schedule", authMiddleware, async (req: AuthRequest, res) => {
+  const { data, error } = await supabase
+    .from("v_full_schedule") // Используем нашу SQL View
+    .select("*")
+    .eq("student_id", req.user?.id)
+    .order("day_of_week", { ascending: true })
+    .order("start_time", { ascending: true });
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
 export default router;
