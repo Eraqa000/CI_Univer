@@ -69,4 +69,16 @@ router.get("/schedule", authMiddleware, async (req: AuthRequest, res) => {
   res.json(data);
 });
 
+
+router.get("/grades/weekly", authMiddleware, async (req: AuthRequest, res) => {
+  const { data, error } = await supabase
+    .from("v_weekly_grades")
+    .select("*")
+    .eq("student_id", req.user?.id)
+    .order("week_no", { ascending: true });
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
 export default router;
