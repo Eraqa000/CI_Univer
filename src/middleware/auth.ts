@@ -70,8 +70,15 @@ export async function authMiddleware(
 
     // Переходим к следующему middleware или маршруту
     next();
-  } catch (err) {
+  } catch (err: any) {
     // Если ошибка в токене (недействительный или истекший)
+    try {
+      const tokenPreview = token ? `${token.slice(0,8)}...${token.slice(-8)}` : null;
+      console.error('JWT verify error:', { message: err?.message, tokenPreview });
+    } catch (e) {
+      console.error('JWT verify error (failed to build preview):', err);
+    }
+
     return res.status(401).json({
       error: "Invalid or expired token",
     });
