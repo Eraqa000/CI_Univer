@@ -40,7 +40,8 @@ router.get("/users", authMiddleware, async (req: AuthRequest, res) => {
 
     return res.json(data);
   } catch (error) {
-    return res.status(500).json({ error: "Failed to fetch users" });
+    console.error('admin /users error:', error);
+    return res.status(500).json({ error: "Failed to fetch users", detail: (error as any)?.message || String(error) });
   }
 });
 
@@ -53,7 +54,7 @@ router.put("/users/:id", authMiddleware, async (req: AuthRequest, res) => {
   const userId = req.params.id;
   const { role } = req.body; // Новая роль пользователя
 
-  if (!role || !["student", "instructor", "admin"].includes(role)) {
+  if (!role || !["student", "teacher", "admin"].includes(role)) {
     return res.status(400).json({ error: "Invalid role" });
   }
 
