@@ -19,7 +19,7 @@ router.get("/users", authMiddleware, async (req: AuthRequest, res) => {
 
     let builder = supabase
       .from("profiles")
-      .select("id, full_name, email, role, reg_no, created_at")
+      .select("id, full_name, email, role, created_at")
       .order("created_at", { ascending: false });
 
     if (role && role !== "all") {
@@ -27,9 +27,8 @@ router.get("/users", authMiddleware, async (req: AuthRequest, res) => {
     }
 
     if (q) {
-      // ищем по full_name или reg_no (case-insensitive)
-      // используем OR с ilike
-      builder = builder.or(`full_name.ilike.%${q}% , reg_no.ilike.%${q}%`);
+      // ищем по full_name (case-insensitive)
+      builder = builder.ilike("full_name", `%${q}%`);
     }
 
     const { data, error } = await builder;
