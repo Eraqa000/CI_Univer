@@ -15,6 +15,8 @@ router.get("/users", authMiddleware, async (req: AuthRequest, res) => {
   try {
     // Поддерживаем фильтр по роли и поиск по имени/reg_no
     const role = String(req.query.role || "").trim();
+    // map frontend role names to DB enum values
+    const mapRoleToDb = (r: string) => (r === "teacher" ? "instructor" : r);
     const q = String(req.query.q || "").trim();
 
     let builder = supabase
@@ -23,7 +25,8 @@ router.get("/users", authMiddleware, async (req: AuthRequest, res) => {
       .order("created_at", { ascending: false });
 
     if (role && role !== "all") {
-      builder = builder.eq("role", role);
+      const dbRole = mapRoleToDb(role);
+      builder = builder.eq("role", dbRole);
     }
 
     if (q) {
@@ -53,15 +56,18 @@ router.put("/users/:id", authMiddleware, async (req: AuthRequest, res) => {
   const userId = req.params.id;
   const { role } = req.body; // Новая роль пользователя
 
-  if (!role || !["student", "teacher", "admin"].includes(role)) {
+  const allowed = ["student", "instructor", "admin", "teacher"];
+  if (!role || !allowed.includes(role)) {
     return res.status(400).json({ error: "Invalid role" });
   }
 
+  // map to DB enum value
+  const dbRole = role === "teacher" ? "instructor" : role;
   try {
     // Обновляем роль
     const { data, error } = await supabase
       .from("profiles")
-      .update({ role })
+      .update({ role: dbRole })
       .eq("id", userId);
 
     if (error) {
