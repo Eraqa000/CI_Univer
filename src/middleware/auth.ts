@@ -57,8 +57,11 @@ export async function authMiddleware(
       .single(); // Получаем одну запись (профиль пользователя)
 
     if (error || !data) {
+      console.error('Supabase role fetch error:', { error, data, userId: req.user.id });
+      const detail = (error && (error.message || JSON.stringify(error))) || (data ? JSON.stringify(data) : null);
       return res.status(500).json({
         error: "Failed to fetch user role",
+        detail,
       });
     }
 
